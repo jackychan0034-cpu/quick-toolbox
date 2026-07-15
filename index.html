@@ -9,13 +9,17 @@
     <style>
       .accent-purple { border-top: 7px solid #b99be8; }
       .accent-purple .tool-icon { background: #f2edfc; color: #7551ae; }
-      .proxy-card textarea { width: 100%; resize: vertical; line-height: 1.45; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .78rem; border: 1px solid #ccd3ca; background: #fff; padding: 11px 12px; border-radius: 10px; color: var(--ink); }
+      .proxy-card textarea, .format-card textarea { width: 100%; min-height: 148px; resize: vertical; line-height: 1.45; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .78rem; border: 1px solid #ccd3ca; background: #fff; padding: 11px 12px; border-radius: 10px; color: var(--ink); }
       .proxy-lists { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
       .proxy-card textarea[readonly] { background: #f6f3fb; color: #433565; }
       .accent-teal { border-top: 7px solid #70cbbb; }
       .accent-teal .tool-icon { background: #e8f8f4; color: #247b6a; }
       .format-card textarea[readonly] { background: #edf9f6; color: #1e695b; }
-      @media (max-width: 800px) { .proxy-lists { grid-template-columns: 1fr; } }
+      .format-card .proxy-lists > div { min-width: 0; }
+      .format-card .search-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .format-card .search-button { background: #247b6a; }
+      .format-card .secondary-button { background: #edf9f6; border-color: #bce5da; color: #1e695b; }
+      @media (max-width: 800px) { .proxy-lists, .format-card .search-actions { grid-template-columns: 1fr; } }
     </style>
   </head>
   <body>
