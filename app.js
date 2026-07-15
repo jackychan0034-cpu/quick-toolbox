@@ -53,20 +53,20 @@ $("shuffleProxies").addEventListener("click", () => {
     $("proxyList").focus();
     return;
   }
-  $("proxyList").value = shuffle(proxies).join("\n");
+  $("shuffledProxyList").value = shuffle(proxies).join("\n");
   status.textContent = `已隨機打亂 ${proxies.length} 條代理資料。`;
 });
 
 $("copyProxies").addEventListener("click", async () => {
-  const list = $("proxyList").value.trim();
+  const list = $("shuffledProxyList").value.trim();
   const status = $("proxyStatus");
   if (!list) { status.textContent = "沒有可複製的代理資料。"; return; }
   try {
     await navigator.clipboard.writeText(list);
     status.textContent = "已複製打亂後的代理清單。";
   } catch {
-    $("proxyList").focus();
-    $("proxyList").select();
+    $("shuffledProxyList").focus();
+    $("shuffledProxyList").select();
     status.textContent = "已選取清單，請按 Ctrl/Cmd + C 複製。";
   }
 });

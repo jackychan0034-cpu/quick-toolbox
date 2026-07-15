@@ -10,6 +10,9 @@
       .accent-purple { border-top: 7px solid #b99be8; }
       .accent-purple .tool-icon { background: #f2edfc; color: #7551ae; }
       .proxy-card textarea { width: 100%; resize: vertical; line-height: 1.45; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .78rem; border: 1px solid #ccd3ca; background: #fff; padding: 11px 12px; border-radius: 10px; color: var(--ink); }
+      .proxy-lists { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .proxy-card textarea[readonly] { background: #f6f3fb; color: #433565; }
+      @media (max-width: 800px) { .proxy-lists { grid-template-columns: 1fr; } }
     </style>
   </head>
   <body>
@@ -57,9 +60,11 @@
 
         <article class="tool-card accent-purple proxy-card">
           <div class="card-heading"><span class="tool-icon">↯</span><div><p class="label">代理排序</p><h2>隨機打亂代理</h2></div></div>
-          <p class="helper">每行貼上一條代理資料，按一下便會以隨機順序重新排列。</p>
-          <label for="proxyList">代理清單</label>
-          <textarea id="proxyList" rows="7" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="每行一條代理資料"></textarea>
+          <p class="helper">原始清單會保持不變，打亂後的順序會獨立顯示在右邊。</p>
+          <div class="proxy-lists">
+            <div><label for="proxyList">原先順序</label><textarea id="proxyList" rows="7" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="每行一條代理資料"></textarea></div>
+            <div><label for="shuffledProxyList">隨機結果</label><textarea id="shuffledProxyList" rows="7" readonly aria-label="隨機結果" placeholder="打亂後會顯示在這裡"></textarea></div>
+          </div>
           <div class="search-actions proxy-actions"><button id="shuffleProxies" class="search-button" type="button">隨機打亂順序</button><button id="copyProxies" class="secondary-button" type="button">複製結果</button></div>
           <p id="proxyStatus" class="small-note" aria-live="polite">資料只會在此瀏覽器處理，不會儲存或上傳。</p>
         </article>
