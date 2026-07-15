@@ -53,10 +53,10 @@ $("mergeFormat").addEventListener("click", () => {
   const entries = linesFrom("formatLeft"), status = $("formatStatus");
   if (!entries.length) { status.textContent = "請先在資料 A 輸入至少一筆資料。"; return; }
   const pairs = entries.map(item => {
-    const separator = item.search(/\s+/);
-    return separator > 0 ? `${item.slice(0, separator)}:${item.slice(separator).trim()}` : null;
+    const parts = item.split(/\s+/).filter(Boolean);
+    return parts.length > 1 ? parts.join(":") : null;
   }).filter(Boolean);
-  if (!pairs.length) { status.textContent = "每行請至少包含兩段資料，並以空格或 Tab 分開。"; return; }
+  if (!pairs.length) { status.textContent = "每行請至少包含兩項資料，並以空格或 Tab 分開。"; return; }
   $("formatOutput").value = pairs.join("\n");
   $("formatSplitOutput").value = "";
   status.textContent = pairs.length === entries.length ? `已合併 ${pairs.length} 筆資料。` : `已合併 ${pairs.length} 筆資料；略過格式不完整的行。`;
