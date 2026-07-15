@@ -36,3 +36,37 @@ function search(query) { if (!query.trim()) { $("productName").focus(); return; 
 $("googleSearch").addEventListener("click", () => search(`https://www.google.com/search?q=${encodeURIComponent($("productName").value + " price")}`));
 $("hkSearch").addEventListener("click", () => search(`https://www.google.com/search?q=${encodeURIComponent("site:price.com.hk " + $("productName").value)}`));
 $("productName").addEventListener("keydown", event => { if (event.key === "Enter") $("googleSearch").click(); });
+
+function shuffle(items) {
+  for (let index = items.length - 1; index > 0; index -= 1) {
+    const randomIndex = crypto.getRandomValues(new Uint32Array(1))[0] % (index + 1);
+    [items[index], items[randomIndex]] = [items[randomIndex], items[index]];
+  }
+  return items;
+}
+
+$("shuffleProxies").addEventListener("click", () => {
+  const proxies = $("proxyList").value.split(/\r?\n/).map(item => item.trim()).filter(Boolean);
+  const status = $("proxyStatus");
+  if (!proxies.length) {
+    status.textContent = "請先貼上至少一條代理資料。";
+    $("proxyList").focus();
+    return;
+  }
+  $("proxyList").value = shuffle(proxies).join("\n");
+  status.textContent = `已隨機打亂 ${proxies.length} 條代理資料。`;
+});
+
+$("copyProxies").addEventListener("click", async () => {
+  const list = $("proxyList").value.trim();
+  const status = $("proxyStatus");
+  if (!list) { status.textContent = "沒有可複製的代理資料。"; return; }
+  try {
+    await navigator.clipboard.writeText(list);
+    status.textContent = "已複製打亂後的代理清單。";
+  } catch {
+    $("proxyList").focus();
+    $("proxyList").select();
+    status.textContent = "已選取清單，請按 Ctrl/Cmd + C 複製。";
+  }
+});

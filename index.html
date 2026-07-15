@@ -6,6 +6,11 @@
     <meta name="description" content="日常轉換、價格計算與比價搜尋小工具。" />
     <title>小幫手工具箱</title>
     <link rel="stylesheet" href="style.css" />
+    <style>
+      .accent-purple { border-top: 7px solid #b99be8; }
+      .accent-purple .tool-icon { background: #f2edfc; color: #7551ae; }
+      .proxy-card textarea { width: 100%; resize: vertical; line-height: 1.45; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .78rem; border: 1px solid #ccd3ca; background: #fff; padding: 11px 12px; border-radius: 10px; color: var(--ink); }
+    </style>
   </head>
   <body>
     <header class="site-header">
@@ -48,6 +53,15 @@
           <input id="productName" type="search" placeholder="例如：Sony 耳機 WH-1000XM6" />
           <div class="search-actions"><button id="googleSearch" class="search-button">搜尋網上價格</button><button id="hkSearch" class="secondary-button">搜尋香港比價</button></div>
           <p class="small-note">搜尋會在新分頁開啟；網站不會記錄你的搜尋內容。</p>
+        </article>
+
+        <article class="tool-card accent-purple proxy-card">
+          <div class="card-heading"><span class="tool-icon">↯</span><div><p class="label">代理排序</p><h2>隨機打亂代理</h2></div></div>
+          <p class="helper">每行貼上一條代理資料，按一下便會以隨機順序重新排列。</p>
+          <label for="proxyList">代理清單</label>
+          <textarea id="proxyList" rows="7" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="每行一條代理資料"></textarea>
+          <div class="search-actions proxy-actions"><button id="shuffleProxies" class="search-button" type="button">隨機打亂順序</button><button id="copyProxies" class="secondary-button" type="button">複製結果</button></div>
+          <p id="proxyStatus" class="small-note" aria-live="polite">資料只會在此瀏覽器處理，不會儲存或上傳。</p>
         </article>
       </section>
 
