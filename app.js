@@ -91,3 +91,21 @@ $("downloadFormat").addEventListener("click", () => {
   URL.revokeObjectURL(link.href);
   status.textContent = "已建立 TXT 檔案。";
 });
+
+$("copySplitFormat").addEventListener("click", async () => {
+  const result = $("formatSplitOutput").value.trim(), status = $("formatStatus");
+  if (!result) { status.textContent = "請先分拆資料。"; return; }
+  try { await navigator.clipboard.writeText(result); status.textContent = "已複製分拆結果。"; }
+  catch { $("formatSplitOutput").focus(); $("formatSplitOutput").select(); status.textContent = "已選取分拆結果，請按 Ctrl/Cmd + C 複製。"; }
+});
+
+$("downloadSplitFormat").addEventListener("click", () => {
+  const result = $("formatSplitOutput").value.trim(), status = $("formatStatus");
+  if (!result) { status.textContent = "請先分拆資料。"; return; }
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(new Blob([result], { type: "text/plain;charset=utf-8" }));
+  link.download = "split-data.txt";
+  link.click();
+  URL.revokeObjectURL(link.href);
+  status.textContent = "已建立分拆 TXT 檔案。";
+});
