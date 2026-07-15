@@ -12,6 +12,9 @@
       .proxy-card textarea { width: 100%; resize: vertical; line-height: 1.45; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .78rem; border: 1px solid #ccd3ca; background: #fff; padding: 11px 12px; border-radius: 10px; color: var(--ink); }
       .proxy-lists { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
       .proxy-card textarea[readonly] { background: #f6f3fb; color: #433565; }
+      .accent-teal { border-top: 7px solid #70cbbb; }
+      .accent-teal .tool-icon { background: #e8f8f4; color: #247b6a; }
+      .format-card textarea[readonly] { background: #edf9f6; color: #1e695b; }
       @media (max-width: 800px) { .proxy-lists { grid-template-columns: 1fr; } }
     </style>
   </head>
@@ -49,6 +52,19 @@
           </div>
           <div class="search-actions proxy-actions"><button id="shuffleProxies" class="search-button" type="button">隨機打亂順序</button><button id="copyProxies" class="secondary-button" type="button">複製結果</button></div>
           <p id="proxyStatus" class="small-note" aria-live="polite">資料只會在此瀏覽器處理，不會儲存或上傳。</p>
+        </article>
+
+        <article class="tool-card accent-teal format-card">
+          <div class="card-heading"><span class="tool-icon">⟷</span><div><p class="label">文字整理</p><h2>格式合併</h2></div></div>
+          <p class="helper">將兩欄資料按行配對，快速以冒號合併為一行一筆。</p>
+          <div class="proxy-lists">
+            <div><label for="formatLeft">資料 A</label><textarea id="formatLeft" rows="6" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="每行一筆資料"></textarea></div>
+            <div><label for="formatRight">資料 B</label><textarea id="formatRight" rows="6" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="每行一筆資料"></textarea></div>
+          </div>
+          <label for="formatOutput">合併結果</label>
+          <textarea id="formatOutput" rows="6" readonly aria-label="合併結果" placeholder="合併結果會顯示在這裡"></textarea>
+          <div class="search-actions proxy-actions"><button id="mergeFormat" class="search-button" type="button">合併資料</button><button id="splitFormat" class="secondary-button" type="button">分拆資料</button><button id="copyFormat" class="secondary-button" type="button">複製結果</button><button id="downloadFormat" class="secondary-button" type="button">下載 TXT</button></div>
+          <p id="formatStatus" class="small-note" aria-live="polite">資料只會在此瀏覽器處理，不會儲存或上傳。</p>
         </article>
       </section>
 
