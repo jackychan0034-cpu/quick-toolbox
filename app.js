@@ -50,11 +50,16 @@ function linesFrom(id) {
 }
 
 $("mergeFormat").addEventListener("click", () => {
-  const left = linesFrom("formatLeft"), right = linesFrom("formatRight"), status = $("formatStatus");
-  if (!left.length || !right.length) { status.textContent = "請在兩欄都輸入至少一筆資料。"; return; }
-  const pairs = Math.min(left.length, right.length);
-  $("formatOutput").value = left.slice(0, pairs).map((item, index) => `${item}:${right[index]}`).join("\n");
-  status.textContent = left.length === right.length ? `已合併 ${pairs} 筆資料。` : `已合併 ${pairs} 筆資料；兩欄筆數不同，較多的資料未納入。`;
+  const entries = linesFrom("formatLeft"), status = $("formatStatus");
+  if (!entries.length) { status.textContent = "請先在資料 A 輸入至少一筆資料。"; return; }
+  const pairs = entries.map(item => {
+    const separator = item.search(/\s+/);
+    return separator > 0 ? `${item.slice(0, separator)}:${item.slice(separator).trim()}` : null;
+  }).filter(Boolean);
+  if (!pairs.length) { status.textContent = "每行請至少包含兩段資料，並以空格或 Tab 分開。"; return; }
+  $("formatOutput").value = pairs.join("\n");
+  $("formatSplitOutput").value = "";
+  status.textContent = pairs.length === entries.length ? `已合併 ${pairs.length} 筆資料。` : `已合併 ${pairs.length} 筆資料；略過格式不完整的行。`;
 });
 
 $("splitFormat").addEventListener("click", () => {
@@ -65,8 +70,7 @@ $("splitFormat").addEventListener("click", () => {
     return separator > 0 ? [item.slice(0, separator), item.slice(separator + 1)] : null;
   }).filter(Boolean);
   if (!validEntries.length) { status.textContent = "找不到可分拆的「資料 A:資料 B」格式。"; return; }
-  $("formatLeft").value = validEntries.map(([left]) => left).join("\n");
-  $("formatRight").value = validEntries.map(([, right]) => right).join("\n");
+  $("formatSplitOutput").value = validEntries.map(([left, right]) => `${left}\t${right}`).join("\n");
   status.textContent = validEntries.length === entries.length ? `已分拆 ${validEntries.length} 筆資料。` : `已分拆 ${validEntries.length} 筆資料；略過沒有冒號的行。`;
 });
 
