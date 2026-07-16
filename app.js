@@ -2,16 +2,56 @@ const $ = (id) => document.getElementById(id);
 const AUTH_USER = "Admin";
 const AUTH_PASS = "Admin";
 const AUTH_KEY = "quickToolboxMember";
+const AUTH_DURATION_MS = 60 * 60 * 1000;
+let authTimerId = null;
 
-function setAuthState(isLoggedIn) {
+function readAuthSession() {
+  try {
+    const session = JSON.parse(localStorage.getItem(AUTH_KEY) || "null");
+    if (!session || session.user !== AUTH_USER || !Number.isFinite(session.expiresAt)) return null;
+    return session;
+  } catch {
+    return null;
+  }
+}
+
+function startAutoLogout(expiresAt) {
+  clearTimeout(authTimerId);
+  const timeLeft = expiresAt - Date.now();
+  if (timeLeft <= 0) {
+    logout({ message: "登入已超過 1 小時，請重新登入。" });
+    return;
+  }
+  authTimerId = setTimeout(() => logout({ message: "登入已超過 1 小時，請重新登入。" }), timeLeft);
+}
+
+function setAuthState(isLoggedIn, expiresAt = null) {
+  clearTimeout(authTimerId);
   document.body.classList.toggle("is-guest", !isLoggedIn);
   document.body.classList.toggle("is-member", isLoggedIn);
   if (isLoggedIn) $("memberBadge").textContent = "Admin · 最高權限";
   $("loginForm").hidden = true;
+  if (isLoggedIn && expiresAt) startAutoLogout(expiresAt);
+}
+
+function logout(options = {}) {
+  localStorage.removeItem(AUTH_KEY);
+  setAuthState(false);
+  if (options.message) $("loginError").textContent = options.message;
+  if (options.focus) $("loginToggle").focus();
+}
+
+function applyStoredAuth() {
+  const session = readAuthSession();
+  if (!session || session.expiresAt <= Date.now()) {
+    logout();
+    return;
+  }
+  setAuthState(true, session.expiresAt);
 }
 
 function initAuth() {
-  setAuthState(localStorage.getItem(AUTH_KEY) === AUTH_USER);
+  applyStoredAuth();
   $("loginToggle").addEventListener("click", () => {
     $("loginForm").hidden = !$("loginForm").hidden;
     if (!$("loginForm").hidden) $("loginPassword").focus();
@@ -21,17 +61,18 @@ function initAuth() {
     const user = $("loginUser").value.trim();
     const password = $("loginPassword").value;
     if (user === AUTH_USER && password === AUTH_PASS) {
-      localStorage.setItem(AUTH_KEY, AUTH_USER);
+      const expiresAt = Date.now() + AUTH_DURATION_MS;
+      localStorage.setItem(AUTH_KEY, JSON.stringify({ user: AUTH_USER, expiresAt }));
       $("loginError").textContent = "";
-      setAuthState(true);
+      setAuthState(true, expiresAt);
       return;
     }
     $("loginError").textContent = "帳戶或密碼不正確。";
   });
-  $("logoutButton").addEventListener("click", () => {
-    localStorage.removeItem(AUTH_KEY);
-    setAuthState(false);
-    $("loginPassword").focus();
+  $("logoutButton").addEventListener("click", () => logout({ focus: true }));
+  window.addEventListener("focus", applyStoredAuth);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") applyStoredAuth();
   });
 }
 
