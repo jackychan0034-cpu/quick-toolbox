@@ -55,11 +55,11 @@
         <p>轉得快，找得準。</p>
         <div id="memberLogin" class="member-login">
           <button id="loginToggle" class="secondary-button login-toggle" type="button">登入</button>
-          <form id="loginForm" class="login-popover" hidden>
+          <form id="loginForm" class="login-popover" autocomplete="off" hidden>
             <label for="loginUser">帳戶</label>
-            <input id="loginUser" autocomplete="username" value="Admin" />
+            <input id="loginUser" autocomplete="off" placeholder="輸入帳戶" />
             <label for="loginPassword">密碼</label>
-            <input id="loginPassword" type="password" autocomplete="current-password" value="Admin" />
+            <input id="loginPassword" type="password" autocomplete="new-password" placeholder="輸入密碼" />
             <button class="search-button" type="submit">登入</button>
             <p id="loginError" class="auth-error" aria-live="polite"></p>
           </form>
