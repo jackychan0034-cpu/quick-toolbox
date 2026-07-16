@@ -1,4 +1,41 @@
 const $ = (id) => document.getElementById(id);
+const AUTH_USER = "Admin";
+const AUTH_PASS = "Admin";
+const AUTH_KEY = "quickToolboxMember";
+
+function setAuthState(isLoggedIn) {
+  document.body.classList.toggle("is-guest", !isLoggedIn);
+  document.body.classList.toggle("is-member", isLoggedIn);
+  if (isLoggedIn) $("memberBadge").textContent = "Admin · 最高權限";
+  $("loginForm").hidden = true;
+}
+
+function initAuth() {
+  setAuthState(localStorage.getItem(AUTH_KEY) === AUTH_USER);
+  $("loginToggle").addEventListener("click", () => {
+    $("loginForm").hidden = !$("loginForm").hidden;
+    if (!$("loginForm").hidden) $("loginPassword").focus();
+  });
+  $("loginForm").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const user = $("loginUser").value.trim();
+    const password = $("loginPassword").value;
+    if (user === AUTH_USER && password === AUTH_PASS) {
+      localStorage.setItem(AUTH_KEY, AUTH_USER);
+      $("loginError").textContent = "";
+      setAuthState(true);
+      return;
+    }
+    $("loginError").textContent = "帳戶或密碼不正確。";
+  });
+  $("logoutButton").addEventListener("click", () => {
+    localStorage.removeItem(AUTH_KEY);
+    setAuthState(false);
+    $("loginPassword").focus();
+  });
+}
+
+initAuth();
 
 function updateCurrency() {
   const amount = Number($("foreignAmount").value) || 0;
@@ -48,6 +85,66 @@ $("copyProxies").addEventListener("click", async () => {
 function linesFrom(id) {
   return $(id).value.split(/\r?\n/).map(item => item.trim()).filter(Boolean);
 }
+
+function parseIpv4(ip) {
+  const parts = ip.split(".").map(Number);
+  if (parts.length !== 4 || parts.some(part => !Number.isInteger(part) || part < 0 || part > 255)) return null;
+  return parts;
+}
+
+function increaseIpv4(ipParts, offset) {
+  let value = ((ipParts[0] << 24) >>> 0) + (ipParts[1] << 16) + (ipParts[2] << 8) + ipParts[3] + offset;
+  if (value > 4294967295) return null;
+  return [
+    (value >>> 24) & 255,
+    (value >>> 16) & 255,
+    (value >>> 8) & 255,
+    value & 255,
+  ].join(".");
+}
+
+function downloadText(filename, content) {
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(new Blob([content], { type: "text/plain;charset=utf-8" }));
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+$("makeProxies").addEventListener("click", () => {
+  const status = $("proxyMakerStatus");
+  const listedHosts = linesFrom("proxyMakerHosts");
+  const startIp = $("proxyMakerStartIp").value.trim();
+  const count = Math.max(1, Math.min(Number($("proxyMakerCount").value) || 0, 1000));
+  const port = $("proxyMakerPort").value.trim();
+  const user = $("proxyMakerUser").value.trim();
+  const pass = $("proxyMakerPass").value.trim();
+  if (!/^\d{1,5}$/.test(port) || Number(port) < 1 || Number(port) > 65535) { status.textContent = "請輸入有效 Port，例如 31280。"; return; }
+  if (!user || !pass) { status.textContent = "請輸入 Username 和 Password。"; return; }
+  let hosts = listedHosts;
+  if (!hosts.length) {
+    const ipParts = parseIpv4(startIp);
+    if (!ipParts) { status.textContent = "請貼上 IP / 主機清單，或輸入有效起始 IP。"; return; }
+    hosts = Array.from({ length: count }, (_, index) => increaseIpv4(ipParts, index)).filter(Boolean);
+  }
+  if (!hosts.length) { status.textContent = "沒有可生成的代理資料。"; return; }
+  $("proxyMakerOutput").value = hosts.map(host => `${host}:${port}:${user}:${pass}`).join("\n");
+  status.textContent = `已生成 ${hosts.length} 條代理格式。`;
+});
+
+$("copyMadeProxies").addEventListener("click", async () => {
+  const result = $("proxyMakerOutput").value.trim(), status = $("proxyMakerStatus");
+  if (!result) { status.textContent = "請先生成代理資料。"; return; }
+  try { await navigator.clipboard.writeText(result); status.textContent = "已複製代理結果。"; }
+  catch { $("proxyMakerOutput").focus(); $("proxyMakerOutput").select(); status.textContent = "已選取代理結果，請按 Ctrl/Cmd + C 複製。"; }
+});
+
+$("downloadMadeProxies").addEventListener("click", () => {
+  const result = $("proxyMakerOutput").value.trim(), status = $("proxyMakerStatus");
+  if (!result) { status.textContent = "請先生成代理資料。"; return; }
+  downloadText("proxy-list.txt", result);
+  status.textContent = "已建立代理 TXT 檔案。";
+});
 
 $("mergeFormat").addEventListener("click", () => {
   const entries = linesFrom("formatLeft"), status = $("formatStatus");
@@ -100,11 +197,7 @@ $("copyFormat").addEventListener("click", async () => {
 $("downloadFormat").addEventListener("click", () => {
   const result = $("formatOutput").value.trim(), status = $("formatStatus");
   if (!result) { status.textContent = "請先合併資料。"; return; }
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(new Blob([result], { type: "text/plain;charset=utf-8" }));
-  link.download = "merged-data.txt";
-  link.click();
-  URL.revokeObjectURL(link.href);
+  downloadText("merged-data.txt", result);
   status.textContent = "已建立 TXT 檔案。";
 });
 
@@ -118,10 +211,6 @@ $("copySplitFormat").addEventListener("click", async () => {
 $("downloadSplitFormat").addEventListener("click", () => {
   const result = $("formatSplitOutput").value.trim(), status = $("formatStatus");
   if (!result) { status.textContent = "請先分拆資料。"; return; }
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(new Blob([result], { type: "text/plain;charset=utf-8" }));
-  link.download = "split-data.txt";
-  link.click();
-  URL.revokeObjectURL(link.href);
+  downloadText("split-data.txt", result);
   status.textContent = "已建立分拆 TXT 檔案。";
 });
