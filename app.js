@@ -49,15 +49,10 @@ function linesFrom(id) {
   return $(id).value.split(/\r?\n/).map(item => item.trim()).filter(Boolean);
 }
 
-function cleanEntities(text) {
-  return text.replace(/&amp;/g, "&");
-}
-
 $("mergeFormat").addEventListener("click", () => {
   const entries = linesFrom("formatLeft"), status = $("formatStatus");
   if (!entries.length) { status.textContent = "請先在資料 A 輸入至少一筆資料。"; return; }
   const pairs = entries.map(item => {
-    item = cleanEntities(item);
     const parts = item.split(/\s+/).filter(Boolean);
     return parts.length > 1 ? parts.join(":") : null;
   }).filter(Boolean);
@@ -71,7 +66,6 @@ $("splitFormat").addEventListener("click", () => {
   const entries = linesFrom("formatLeft"), status = $("formatStatus");
   if (!entries.length) { status.textContent = "請先在輸入資料貼上至少一行資料。"; return; }
   const validEntries = entries.map(item => {
-    item = cleanEntities(item);
     const separator = item.indexOf(":");
     return separator > 0 ? [item.slice(0, separator), item.slice(separator + 1)] : null;
   }).filter(Boolean);
@@ -79,6 +73,18 @@ $("splitFormat").addEventListener("click", () => {
   $("formatSplitOutput").value = validEntries.map(([left, right]) => `${left}\t${right}`).join("\n");
   $("formatOutput").value = "";
   status.textContent = validEntries.length === entries.length ? `已分拆 ${validEntries.length} 筆資料。` : `已分拆 ${validEntries.length} 筆資料；略過沒有冒號的行。`;
+});
+
+$("cleanupFormat").addEventListener("click", () => {
+  const mergedResult = $("formatOutput").value;
+  const splitResult = $("formatSplitOutput").value;
+  const status = $("formatStatus");
+  const target = mergedResult || splitResult;
+  if (!target) { status.textContent = "請先合併或分拆資料，再按清理亂碼。"; return; }
+  const count = (target.match(/&amp;/g) || []).length;
+  if (mergedResult) $("formatOutput").value = target.replace(/&amp;/g, "&");
+  else $("formatSplitOutput").value = target.replace(/&amp;/g, "&");
+  status.textContent = count ? `已清理 ${count} 個亂碼字串。` : "目前結果沒有需要清理的亂碼字串。";
 });
 
 $("copyFormat").addEventListener("click", async () => {
