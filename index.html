@@ -16,6 +16,11 @@
       .proxy-maker-card textarea[readonly] { background: #edf8fc; color: #1f6380; }
       .proxy-maker-card { grid-column: 1 / -1; order: 99; }
       .proxy-maker-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+      .proxy-default-toolbar { display: flex; justify-content: flex-end; margin: 0 0 12px; }
+      .proxy-default-panel { border: 1px solid #bee0ed; background: #f2fbff; border-radius: 14px; padding: 14px; margin: 0 0 14px; }
+      .proxy-default-panel[hidden] { display: none; }
+      .proxy-default-panel h3 { font-size: 1rem; margin: 0 0 8px; }
+      .proxy-default-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin-top: 12px; }
       .proxy-maker-card .search-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .proxy-maker-card .search-button { background: #22769a; }
       .proxy-maker-card .secondary-button { background: #edf8fc; border-color: #bee0ed; color: #1f6380; }
@@ -45,7 +50,7 @@
       body.is-guest .member-only { display: none; }
       body.is-member .member-login { display: none; }
       body.is-member .member-badge, body.is-member .logout-button { display: inline-flex; }
-      @media (max-width: 800px) { .proxy-lists, .proxy-maker-fields, .proxy-maker-card .search-actions, .format-card .search-actions, .format-fields { grid-template-columns: 1fr; } }
+      @media (max-width: 800px) { .proxy-lists, .proxy-maker-fields, .proxy-default-actions, .proxy-maker-card .search-actions, .format-card .search-actions, .format-fields { grid-template-columns: 1fr; } }
     </style>
   </head>
   <body class="is-guest">
@@ -118,10 +123,21 @@
 
         <article class="tool-card accent-blue proxy-maker-card member-only">
           <div class="card-heading"><span class="tool-icon">＋</span><div><p class="label">代理格式</p><h2>代理製造工具</h2></div></div>
-          <p class="helper">快速產生 <code>host:port:username:password</code> 文字清單；這只會整理格式，不會建立真實代理服務。</p>
-          <div><label for="proxyMakerHosts">IP / 主機清單</label><textarea id="proxyMakerHosts" rows="5" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="每行一個 IP 或主機&#10;例如：87.83.172.100"></textarea></div>
+          <p class="helper">輸入起始 IP 後自動按數量遞增，快速產生 <code>host:port:username:password</code> 文字清單。</p>
+          <div class="proxy-default-toolbar"><button id="toggleProxyDefaults" class="secondary-button" type="button">預設設定</button></div>
+          <div id="proxyDefaultPanel" class="proxy-default-panel" hidden>
+            <h3>預設選項</h3>
+            <div class="proxy-maker-fields">
+              <div><label for="defaultStartIp">預設起始 IP</label><input id="defaultStartIp" placeholder="例如：87.83.172.100" /></div>
+              <div><label for="defaultCount">預設數量</label><input id="defaultCount" type="number" min="1" max="1000" value="5" /></div>
+              <div><label for="defaultPort">預設 Port</label><input id="defaultPort" inputmode="numeric" placeholder="31280" /></div>
+              <div><label for="defaultUser">預設 Username</label><input id="defaultUser" autocomplete="off" placeholder="username" /></div>
+              <div><label for="defaultPass">預設 Password</label><input id="defaultPass" autocomplete="off" placeholder="password" /></div>
+            </div>
+            <div class="proxy-default-actions"><button id="saveProxyDefaults" class="search-button" type="button">儲存預設</button><button id="applyProxyDefaults" class="secondary-button" type="button">套用預設</button><button id="clearProxyDefaults" class="secondary-button" type="button">清除預設</button></div>
+          </div>
           <div class="proxy-maker-fields">
-            <div><label for="proxyMakerStartIp">或起始 IP</label><input id="proxyMakerStartIp" placeholder="例如：87.83.172.100" /></div>
+            <div><label for="proxyMakerStartIp">起始 IP</label><input id="proxyMakerStartIp" placeholder="例如：87.83.172.100" /></div>
             <div><label for="proxyMakerCount">產生數量</label><input id="proxyMakerCount" type="number" min="1" max="1000" value="5" /></div>
             <div><label for="proxyMakerPort">Port</label><input id="proxyMakerPort" inputmode="numeric" placeholder="31280" /></div>
             <div><label for="proxyMakerUser">Username</label><input id="proxyMakerUser" autocomplete="off" placeholder="username" /></div>

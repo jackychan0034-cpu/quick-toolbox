@@ -3,6 +3,7 @@ const AUTH_USER = "Admin";
 const AUTH_PASS = "Admin";
 const AUTH_KEY = "quickToolboxMember";
 const AUTH_DURATION_MS = 60 * 60 * 1000;
+const PROXY_DEFAULTS_KEY = "quickToolboxProxyDefaults";
 let authTimerId = null;
 
 function readAuthSession() {
@@ -152,24 +153,87 @@ function downloadText(filename, content) {
   URL.revokeObjectURL(link.href);
 }
 
+function readProxyDefaults() {
+  try {
+    const defaults = JSON.parse(localStorage.getItem(PROXY_DEFAULTS_KEY) || "null");
+    return defaults && typeof defaults === "object" ? defaults : null;
+  } catch {
+    return null;
+  }
+}
+
+function proxyValuesFrom(prefix) {
+  return {
+    startIp: $(`${prefix}StartIp`).value.trim(),
+    count: $(`${prefix}Count`).value.trim(),
+    port: $(`${prefix}Port`).value.trim(),
+    user: $(`${prefix}User`).value.trim(),
+    pass: $(`${prefix}Pass`).value.trim(),
+  };
+}
+
+function setProxyValues(values, prefix = "proxyMaker") {
+  $(`${prefix}StartIp`).value = values.startIp || "";
+  $(`${prefix}Count`).value = values.count || "5";
+  $(`${prefix}Port`).value = values.port || "";
+  $(`${prefix}User`).value = values.user || "";
+  $(`${prefix}Pass`).value = values.pass || "";
+}
+
+function validateProxyOptions(values) {
+  if (!parseIpv4(values.startIp)) return "請輸入有效起始 IP。";
+  const count = Number(values.count);
+  if (!Number.isInteger(count) || count < 1 || count > 1000) return "產生數量請輸入 1 至 1000。";
+  if (!/^\d{1,5}$/.test(values.port) || Number(values.port) < 1 || Number(values.port) > 65535) return "請輸入有效 Port，例如 31280。";
+  if (!values.user || !values.pass) return "請輸入 Username 和 Password。";
+  return "";
+}
+
+function initProxyDefaults() {
+  const savedDefaults = readProxyDefaults();
+  if (savedDefaults) {
+    setProxyValues(savedDefaults);
+    setProxyValues(savedDefaults, "default");
+  }
+  $("toggleProxyDefaults").addEventListener("click", () => {
+    $("proxyDefaultPanel").hidden = !$("proxyDefaultPanel").hidden;
+  });
+  $("saveProxyDefaults").addEventListener("click", () => {
+    const status = $("proxyMakerStatus");
+    const values = proxyValuesFrom("default");
+    const error = validateProxyOptions(values);
+    if (error) { status.textContent = error; return; }
+    localStorage.setItem(PROXY_DEFAULTS_KEY, JSON.stringify(values));
+    setProxyValues(values);
+    status.textContent = "已儲存並套用預設設定。";
+  });
+  $("applyProxyDefaults").addEventListener("click", () => {
+    const status = $("proxyMakerStatus");
+    const saved = readProxyDefaults();
+    if (!saved) { status.textContent = "尚未儲存預設設定。"; return; }
+    setProxyValues(saved);
+    setProxyValues(saved, "default");
+    status.textContent = "已套用預設設定。";
+  });
+  $("clearProxyDefaults").addEventListener("click", () => {
+    localStorage.removeItem(PROXY_DEFAULTS_KEY);
+    setProxyValues({ count: "5" }, "default");
+    $("proxyMakerStatus").textContent = "已清除預設設定。";
+  });
+}
+
+initProxyDefaults();
+
 $("makeProxies").addEventListener("click", () => {
   const status = $("proxyMakerStatus");
-  const listedHosts = linesFrom("proxyMakerHosts");
-  const startIp = $("proxyMakerStartIp").value.trim();
-  const count = Math.max(1, Math.min(Number($("proxyMakerCount").value) || 0, 1000));
-  const port = $("proxyMakerPort").value.trim();
-  const user = $("proxyMakerUser").value.trim();
-  const pass = $("proxyMakerPass").value.trim();
-  if (!/^\d{1,5}$/.test(port) || Number(port) < 1 || Number(port) > 65535) { status.textContent = "請輸入有效 Port，例如 31280。"; return; }
-  if (!user || !pass) { status.textContent = "請輸入 Username 和 Password。"; return; }
-  let hosts = listedHosts;
-  if (!hosts.length) {
-    const ipParts = parseIpv4(startIp);
-    if (!ipParts) { status.textContent = "請貼上 IP / 主機清單，或輸入有效起始 IP。"; return; }
-    hosts = Array.from({ length: count }, (_, index) => increaseIpv4(ipParts, index)).filter(Boolean);
-  }
+  const values = proxyValuesFrom("proxyMaker");
+  const error = validateProxyOptions(values);
+  if (error) { status.textContent = error; return; }
+  const ipParts = parseIpv4(values.startIp);
+  const count = Number(values.count);
+  const hosts = Array.from({ length: count }, (_, index) => increaseIpv4(ipParts, index)).filter(Boolean);
   if (!hosts.length) { status.textContent = "沒有可生成的代理資料。"; return; }
-  $("proxyMakerOutput").value = hosts.map(host => `${host}:${port}:${user}:${pass}`).join("\n");
+  $("proxyMakerOutput").value = hosts.map(host => `${host}:${values.port}:${values.user}:${values.pass}`).join("\n");
   status.textContent = `已生成 ${hosts.length} 條代理格式。`;
 });
 
