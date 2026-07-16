@@ -20,6 +20,8 @@
       .format-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
       .format-fields label { margin-top: 0; }
       .format-card .search-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .format-card .cleanup-button { grid-column: 1 / -1; }
+      .cleanup-notice { margin: 10px 0 0; padding: 10px 12px; border-radius: 10px; background: #edf9f6; color: #1e695b; font-size: .9rem; font-weight: 650; }
       .format-result-actions { display: grid; gap: 9px; margin-top: 9px; }
       .format-result-actions .format-action-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
       .format-card .search-button { background: #247b6a; }
@@ -68,10 +70,11 @@
           <p class="helper">每次只可使用一種模式：合併時以空格或 Tab 分隔；分拆時以冒號分隔。輸入內容會保留；如有需要，可按「清理亂碼」把結果中的 <code>&amp;amp;</code> 轉為 <code>&amp;</code>。</p>
           <div class="format-fields">
             <div><label for="formatLeft">輸入資料</label><textarea id="formatLeft" rows="6" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="合併：第一段 空格 第二段&#10;分拆：第一段:第二段"></textarea></div>
-            <div><label for="formatOutput">合併結果</label><textarea id="formatOutput" rows="6" readonly aria-label="合併結果" placeholder="合併結果會顯示在這裡"></textarea></div>
-            <div><label for="formatSplitOutput">分拆結果</label><textarea id="formatSplitOutput" rows="6" readonly aria-label="分拆結果" placeholder="按「分拆資料」後會顯示在這裡"></textarea></div>
+            <div><label for="formatOutput">合併結果（清理後會顯示在此）</label><textarea id="formatOutput" rows="6" readonly aria-label="合併結果" placeholder="合併結果會顯示在這裡"></textarea></div>
+            <div><label for="formatSplitOutput">分拆結果（清理後會顯示在此）</label><textarea id="formatSplitOutput" rows="6" readonly aria-label="分拆結果" placeholder="按「分拆資料」後會顯示在這裡"></textarea></div>
           </div>
-          <div class="search-actions proxy-actions"><button id="mergeFormat" class="search-button" type="button">合併資料</button><button id="splitFormat" class="secondary-button" type="button">分拆資料</button><button id="cleanupFormat" class="secondary-button" type="button">清理亂碼（&amp;amp; → &amp;）</button></div>
+          <div class="search-actions proxy-actions"><button id="mergeFormat" class="search-button" type="button">合併資料</button><button id="splitFormat" class="secondary-button" type="button">分拆資料</button><button id="cleanupFormat" class="secondary-button cleanup-button" type="button">清理目前結果（&amp;amp; → &amp;）</button></div>
+          <p id="cleanupNotice" class="cleanup-notice" aria-live="polite">清理後會直接更新在上方的「合併結果」或「分拆結果」欄；輸入資料不會改動。</p>
           <div class="format-result-actions">
             <div class="format-action-row"><button id="copyFormat" class="secondary-button" type="button">複製合併結果</button><button id="copySplitFormat" class="secondary-button" type="button">複製分拆結果</button></div>
             <div class="format-action-row"><button id="downloadFormat" class="secondary-button" type="button">下載合併 TXT</button><button id="downloadSplitFormat" class="secondary-button" type="button">下載分拆 TXT</button></div>

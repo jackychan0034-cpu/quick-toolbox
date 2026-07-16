@@ -79,11 +79,14 @@ $("cleanupFormat").addEventListener("click", () => {
   const mergedResult = $("formatOutput").value;
   const splitResult = $("formatSplitOutput").value;
   const status = $("formatStatus");
+  const notice = $("cleanupNotice");
   const target = mergedResult || splitResult;
-  if (!target) { status.textContent = "請先合併或分拆資料，再按清理亂碼。"; return; }
+  if (!target) { status.textContent = "請先合併或分拆資料，再按清理亂碼。"; notice.textContent = "目前沒有結果可清理。請先產生合併結果或分拆結果。"; return; }
   const count = (target.match(/&amp;/g) || []).length;
+  const resultName = mergedResult ? "合併結果" : "分拆結果";
   if (mergedResult) $("formatOutput").value = target.replace(/&amp;/g, "&");
   else $("formatSplitOutput").value = target.replace(/&amp;/g, "&");
+  notice.textContent = count ? `已清理 ${count} 個亂碼字串，結果已更新在上方的「${resultName}」欄。` : `「${resultName}」欄沒有需要清理的亂碼字串。`;
   status.textContent = count ? `已清理 ${count} 個亂碼字串。` : "目前結果沒有需要清理的亂碼字串。";
 });
 
