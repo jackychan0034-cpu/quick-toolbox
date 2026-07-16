@@ -164,34 +164,47 @@ function readProxyDefaults() {
 
 function proxyValuesFrom() {
   return {
+    mode: $("proxyMakerMode").value,
     startIp: $("proxyMakerStartIp").value.trim(),
     count: $("proxyMakerCount").value.trim(),
     port: $("proxyMakerPort").value.trim(),
+    endPort: $("proxyMakerEndPort").value.trim(),
     user: $("proxyMakerUser").value.trim(),
     pass: $("proxyMakerPass").value.trim(),
   };
 }
 
 function setProxyValues(values) {
+  $("proxyMakerMode").value = values.mode || "ip";
   $("proxyMakerStartIp").value = values.startIp || "";
   $("proxyMakerCount").value = values.count || "5";
   $("proxyMakerPort").value = values.port || "";
+  $("proxyMakerEndPort").value = values.endPort || "";
   $("proxyMakerUser").value = values.user || "";
   $("proxyMakerPass").value = values.pass || "";
 }
 
 function setProxyDefaultsLocked(isLocked) {
-  ["proxyMakerStartIp", "proxyMakerCount", "proxyMakerPort", "proxyMakerUser", "proxyMakerPass"].forEach((id) => {
+  $("proxyMakerMode").disabled = isLocked;
+  ["proxyMakerStartIp", "proxyMakerCount", "proxyMakerPort", "proxyMakerEndPort", "proxyMakerUser", "proxyMakerPass"].forEach((id) => {
     $(id).readOnly = isLocked;
   });
-  $("toggleProxyDefaults").textContent = isLocked ? "解除預設" : "預設設定";
+  $("toggleProxyDefaults").textContent = isLocked ? "修改預設" : "預設設定";
 }
 
 function validateProxyOptions(values) {
   if (!parseIpv4(values.startIp)) return "請輸入有效起始 IP。";
-  const count = Number(values.count);
-  if (!Number.isInteger(count) || count < 1 || count > 1000) return "產生數量請輸入 1 至 1000。";
-  if (!/^\d{1,5}$/.test(values.port) || Number(values.port) < 1 || Number(values.port) > 65535) return "請輸入有效 Port，例如 31280。";
+  const startPort = Number(values.port);
+  if (!/^\d{1,5}$/.test(values.port) || startPort < 1 || startPort > 65535) return "請輸入有效起始 Port，例如 4001。";
+  if (values.mode === "port") {
+    const endPort = Number(values.endPort);
+    if (!/^\d{1,5}$/.test(values.endPort) || endPort < 1 || endPort > 65535) return "請輸入有效結束 Port，例如 4040。";
+    if (endPort < startPort) return "結束 Port 不可小於起始 Port。";
+    if (endPort - startPort + 1 > 1000) return "Port 範圍最多一次產生 1000 條。";
+  } else {
+    const count = Number(values.count);
+    if (!Number.isInteger(count) || count < 1 || count > 1000) return "產生數量請輸入 1 至 1000。";
+  }
   if (!values.user || !values.pass) return "請輸入 Username 和 Password。";
   return "";
 }
@@ -204,10 +217,9 @@ function initProxyDefaults() {
   }
   $("toggleProxyDefaults").addEventListener("click", () => {
     const status = $("proxyMakerStatus");
-    if (readProxyDefaults()) {
-      localStorage.removeItem(PROXY_DEFAULTS_KEY);
+    if ($("proxyMakerMode").disabled) {
       setProxyDefaultsLocked(false);
-      status.textContent = "已解除預設設定，可以重新修改欄位。";
+      status.textContent = "已解鎖，可以修改模板。完成後按「預設設定」重新儲存。";
       return;
     }
     const values = proxyValuesFrom();
@@ -227,11 +239,20 @@ $("makeProxies").addEventListener("click", () => {
   const error = validateProxyOptions(values);
   if (error) { status.textContent = error; return; }
   const ipParts = parseIpv4(values.startIp);
-  const count = Number(values.count);
-  const hosts = Array.from({ length: count }, (_, index) => increaseIpv4(ipParts, index)).filter(Boolean);
-  if (!hosts.length) { status.textContent = "沒有可生成的代理資料。"; return; }
-  $("proxyMakerOutput").value = hosts.map(host => `${host}:${values.port}:${values.user}:${values.pass}`).join("\n");
-  status.textContent = `已生成 ${hosts.length} 條代理格式。`;
+  let proxies = [];
+  if (values.mode === "port") {
+    const startPort = Number(values.port);
+    const endPort = Number(values.endPort);
+    proxies = Array.from({ length: endPort - startPort + 1 }, (_, index) => `${values.startIp}:${startPort + index}:${values.user}:${values.pass}`);
+    $("proxyMakerCount").value = proxies.length;
+  } else {
+    const count = Number(values.count);
+    const hosts = Array.from({ length: count }, (_, index) => increaseIpv4(ipParts, index)).filter(Boolean);
+    proxies = hosts.map(host => `${host}:${values.port}:${values.user}:${values.pass}`);
+  }
+  if (!proxies.length) { status.textContent = "沒有可生成的代理資料。"; return; }
+  $("proxyMakerOutput").value = proxies.join("\n");
+  status.textContent = `已生成 ${proxies.length} 條代理格式。`;
 });
 
 $("copyMadeProxies").addEventListener("click", async () => {

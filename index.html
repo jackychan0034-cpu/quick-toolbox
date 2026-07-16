@@ -15,6 +15,7 @@
       .proxy-card textarea[readonly] { background: #f6f3fb; color: #433565; }
       .proxy-maker-card textarea[readonly] { background: #edf8fc; color: #1f6380; }
       .proxy-maker-card input[readonly] { background: #edf8fc; color: #1f6380; }
+      .proxy-maker-card select:disabled { background: #edf8fc; color: #1f6380; opacity: 1; }
       .proxy-maker-card { grid-column: 1 / -1; order: 99; }
       .proxy-maker-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
       .proxy-default-toolbar { display: flex; justify-content: flex-end; margin: 0 0 12px; }
@@ -120,12 +121,14 @@
 
         <article class="tool-card accent-blue proxy-maker-card member-only">
           <div class="card-heading"><span class="tool-icon">＋</span><div><p class="label">代理格式</p><h2>代理製造工具</h2></div></div>
-          <p class="helper">輸入起始 IP 後自動按數量遞增，快速產生 <code>host:port:username:password</code> 文字清單。</p>
+          <p class="helper">可用 IP 遞增，或固定 IP 只遞增 Port，例如 4001 至 4040。按「預設設定」可把目前欄位儲存成模板。</p>
           <div class="proxy-default-toolbar"><button id="toggleProxyDefaults" class="secondary-button" type="button">預設設定</button></div>
           <div class="proxy-maker-fields">
-            <div><label for="proxyMakerStartIp">起始 IP</label><input id="proxyMakerStartIp" placeholder="例如：87.83.172.100" /></div>
-            <div><label for="proxyMakerCount">產生數量</label><input id="proxyMakerCount" type="number" min="1" max="1000" value="5" /></div>
-            <div><label for="proxyMakerPort">Port</label><input id="proxyMakerPort" inputmode="numeric" placeholder="31280" /></div>
+            <div><label for="proxyMakerMode">生成方式</label><select id="proxyMakerMode"><option value="ip">IP 遞增</option><option value="port">Port 遞增（IP固定）</option></select></div>
+            <div><label for="proxyMakerStartIp">IP</label><input id="proxyMakerStartIp" placeholder="例如：221.126.23.187" /></div>
+            <div><label for="proxyMakerCount">產生數量（IP遞增）</label><input id="proxyMakerCount" type="number" min="1" max="1000" value="5" /></div>
+            <div><label for="proxyMakerPort">起始 Port</label><input id="proxyMakerPort" inputmode="numeric" placeholder="4001" /></div>
+            <div><label for="proxyMakerEndPort">結束 Port（Port遞增）</label><input id="proxyMakerEndPort" inputmode="numeric" placeholder="4040" /></div>
             <div><label for="proxyMakerUser">Username</label><input id="proxyMakerUser" autocomplete="off" placeholder="username" /></div>
             <div><label for="proxyMakerPass">Password</label><input id="proxyMakerPass" autocomplete="off" placeholder="password" /></div>
           </div>
