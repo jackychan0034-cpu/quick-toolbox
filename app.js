@@ -162,22 +162,29 @@ function readProxyDefaults() {
   }
 }
 
-function proxyValuesFrom(prefix) {
+function proxyValuesFrom() {
   return {
-    startIp: $(`${prefix}StartIp`).value.trim(),
-    count: $(`${prefix}Count`).value.trim(),
-    port: $(`${prefix}Port`).value.trim(),
-    user: $(`${prefix}User`).value.trim(),
-    pass: $(`${prefix}Pass`).value.trim(),
+    startIp: $("proxyMakerStartIp").value.trim(),
+    count: $("proxyMakerCount").value.trim(),
+    port: $("proxyMakerPort").value.trim(),
+    user: $("proxyMakerUser").value.trim(),
+    pass: $("proxyMakerPass").value.trim(),
   };
 }
 
-function setProxyValues(values, prefix = "proxyMaker") {
-  $(`${prefix}StartIp`).value = values.startIp || "";
-  $(`${prefix}Count`).value = values.count || "5";
-  $(`${prefix}Port`).value = values.port || "";
-  $(`${prefix}User`).value = values.user || "";
-  $(`${prefix}Pass`).value = values.pass || "";
+function setProxyValues(values) {
+  $("proxyMakerStartIp").value = values.startIp || "";
+  $("proxyMakerCount").value = values.count || "5";
+  $("proxyMakerPort").value = values.port || "";
+  $("proxyMakerUser").value = values.user || "";
+  $("proxyMakerPass").value = values.pass || "";
+}
+
+function setProxyDefaultsLocked(isLocked) {
+  ["proxyMakerStartIp", "proxyMakerCount", "proxyMakerPort", "proxyMakerUser", "proxyMakerPass"].forEach((id) => {
+    $(id).readOnly = isLocked;
+  });
+  $("toggleProxyDefaults").textContent = isLocked ? "解除預設" : "預設設定";
 }
 
 function validateProxyOptions(values) {
@@ -193,32 +200,22 @@ function initProxyDefaults() {
   const savedDefaults = readProxyDefaults();
   if (savedDefaults) {
     setProxyValues(savedDefaults);
-    setProxyValues(savedDefaults, "default");
+    setProxyDefaultsLocked(true);
   }
   $("toggleProxyDefaults").addEventListener("click", () => {
-    $("proxyDefaultPanel").hidden = !$("proxyDefaultPanel").hidden;
-  });
-  $("saveProxyDefaults").addEventListener("click", () => {
     const status = $("proxyMakerStatus");
-    const values = proxyValuesFrom("default");
+    if (readProxyDefaults()) {
+      localStorage.removeItem(PROXY_DEFAULTS_KEY);
+      setProxyDefaultsLocked(false);
+      status.textContent = "已解除預設設定，可以重新修改欄位。";
+      return;
+    }
+    const values = proxyValuesFrom();
     const error = validateProxyOptions(values);
     if (error) { status.textContent = error; return; }
     localStorage.setItem(PROXY_DEFAULTS_KEY, JSON.stringify(values));
-    setProxyValues(values);
-    status.textContent = "已儲存並套用預設設定。";
-  });
-  $("applyProxyDefaults").addEventListener("click", () => {
-    const status = $("proxyMakerStatus");
-    const saved = readProxyDefaults();
-    if (!saved) { status.textContent = "尚未儲存預設設定。"; return; }
-    setProxyValues(saved);
-    setProxyValues(saved, "default");
-    status.textContent = "已套用預設設定。";
-  });
-  $("clearProxyDefaults").addEventListener("click", () => {
-    localStorage.removeItem(PROXY_DEFAULTS_KEY);
-    setProxyValues({ count: "5" }, "default");
-    $("proxyMakerStatus").textContent = "已清除預設設定。";
+    setProxyDefaultsLocked(true);
+    status.textContent = "已儲存預設設定並鎖住欄位。";
   });
 }
 
@@ -226,7 +223,7 @@ initProxyDefaults();
 
 $("makeProxies").addEventListener("click", () => {
   const status = $("proxyMakerStatus");
-  const values = proxyValuesFrom("proxyMaker");
+  const values = proxyValuesFrom();
   const error = validateProxyOptions(values);
   if (error) { status.textContent = error; return; }
   const ipParts = parseIpv4(values.startIp);
