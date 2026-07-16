@@ -58,20 +58,23 @@ $("mergeFormat").addEventListener("click", () => {
   }).filter(Boolean);
   if (!pairs.length) { status.textContent = "每行請至少包含兩項資料，並以空格或 Tab 分開。"; return; }
   $("formatOutput").value = pairs.join("\n");
+  $("formatLeft").value = "";
   $("formatSplitOutput").value = "";
-  status.textContent = pairs.length === entries.length ? `已合併 ${pairs.length} 筆資料。` : `已合併 ${pairs.length} 筆資料；略過格式不完整的行。`;
+  status.textContent = pairs.length === entries.length ? `已合併 ${pairs.length} 筆資料，並已重置輸入欄。` : `已合併 ${pairs.length} 筆資料；略過格式不完整的行，並已重置輸入欄。`;
 });
 
 $("splitFormat").addEventListener("click", () => {
-  const entries = linesFrom("formatOutput"), status = $("formatStatus");
-  if (!entries.length) { status.textContent = "請先在合併結果貼上至少一行資料。"; return; }
+  const entries = linesFrom("formatLeft"), status = $("formatStatus");
+  if (!entries.length) { status.textContent = "請先在輸入資料貼上至少一行資料。"; return; }
   const validEntries = entries.map(item => {
     const separator = item.indexOf(":");
     return separator > 0 ? [item.slice(0, separator), item.slice(separator + 1)] : null;
   }).filter(Boolean);
   if (!validEntries.length) { status.textContent = "找不到可分拆的「資料 A:資料 B」格式。"; return; }
   $("formatSplitOutput").value = validEntries.map(([left, right]) => `${left}\t${right}`).join("\n");
-  status.textContent = validEntries.length === entries.length ? `已分拆 ${validEntries.length} 筆資料。` : `已分拆 ${validEntries.length} 筆資料；略過沒有冒號的行。`;
+  $("formatLeft").value = "";
+  $("formatOutput").value = "";
+  status.textContent = validEntries.length === entries.length ? `已分拆 ${validEntries.length} 筆資料，並已重置輸入欄。` : `已分拆 ${validEntries.length} 筆資料；略過沒有冒號的行，並已重置輸入欄。`;
 });
 
 $("copyFormat").addEventListener("click", async () => {

@@ -65,9 +65,9 @@
 
         <article class="tool-card accent-teal format-card">
           <div class="card-heading"><span class="tool-icon">⟷</span><div><p class="label">文字整理</p><h2>格式合併</h2></div></div>
-          <p class="helper">只需貼上資料 A；每一行會視為一筆，所有以空格或 Tab 分隔的項目都會以冒號合併。</p>
+          <p class="helper">每次只可使用一種模式：合併時以空格或 Tab 分隔；分拆時以冒號分隔。完成後會自動清空輸入欄與另一種結果。</p>
           <div class="format-fields">
-            <div><label for="formatLeft">資料 A</label><textarea id="formatLeft" rows="6" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="每行一筆資料，例如：第一段 空格 第二段"></textarea></div>
+            <div><label for="formatLeft">輸入資料</label><textarea id="formatLeft" rows="6" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="合併：第一段 空格 第二段&#10;分拆：第一段:第二段"></textarea></div>
             <div><label for="formatOutput">合併結果</label><textarea id="formatOutput" rows="6" readonly aria-label="合併結果" placeholder="合併結果會顯示在這裡"></textarea></div>
             <div><label for="formatSplitOutput">分拆結果</label><textarea id="formatSplitOutput" rows="6" readonly aria-label="分拆結果" placeholder="按「分拆資料」後會顯示在這裡"></textarea></div>
           </div>
