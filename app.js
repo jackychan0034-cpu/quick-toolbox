@@ -153,6 +153,60 @@ function downloadText(filename, content) {
   URL.revokeObjectURL(link.href);
 }
 
+function dedupeKey(line) {
+  return line.trim();
+}
+
+function updateDedupeResult(options = {}) {
+  const source = linesFrom("dedupeSource");
+  const blocklist = linesFrom("dedupeBlocklist");
+  const status = $("dedupeStatus");
+  if (!source.length) {
+    $("dedupeOutput").value = "";
+    status.textContent = options.manual ? "請先貼上需要整理的資料。" : "資料只會在此瀏覽器處理，不會儲存或上傳。";
+    if (options.manual) $("dedupeSource").focus();
+    return;
+  }
+  const blocked = new Set(blocklist.map(dedupeKey));
+  const seen = new Set();
+  const kept = [];
+  let removedByBlocklist = 0;
+  let removedInsideSource = 0;
+  source.forEach((line) => {
+    const key = dedupeKey(line);
+    if (blocked.has(key)) {
+      removedByBlocklist += 1;
+      return;
+    }
+    if (seen.has(key)) {
+      removedInsideSource += 1;
+      return;
+    }
+    seen.add(key);
+    kept.push(line);
+  });
+  $("dedupeOutput").value = kept.join("\n");
+  status.textContent = `已輸出 ${kept.length} 筆；移除 ${removedByBlocklist} 筆重複資料，另移除 ${removedInsideSource} 筆來源內重複。`;
+}
+
+["dedupeSource", "dedupeBlocklist"].forEach((id) => $(id).addEventListener("input", () => updateDedupeResult()));
+
+$("removeDuplicates").addEventListener("click", () => updateDedupeResult({ manual: true }));
+
+$("copyDedupe").addEventListener("click", async () => {
+  const result = $("dedupeOutput").value.trim(), status = $("dedupeStatus");
+  if (!result) { status.textContent = "沒有可複製的新結果。"; return; }
+  try { await navigator.clipboard.writeText(result); status.textContent = "已複製去重後的新結果。"; }
+  catch { $("dedupeOutput").focus(); $("dedupeOutput").select(); status.textContent = "已選取新結果，請按 Ctrl/Cmd + C 複製。"; }
+});
+
+$("downloadDedupe").addEventListener("click", () => {
+  const result = $("dedupeOutput").value.trim(), status = $("dedupeStatus");
+  if (!result) { status.textContent = "沒有可下載的新結果。"; return; }
+  downloadText("dedupe-data.txt", result);
+  status.textContent = "已建立去重後的 TXT 檔案。";
+});
+
 function readProxyDefaults() {
   try {
     const defaults = JSON.parse(localStorage.getItem(PROXY_DEFAULTS_KEY) || "null");

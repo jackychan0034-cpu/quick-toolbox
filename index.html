@@ -10,7 +10,7 @@
       .accent-purple { border-top: 7px solid #b99be8; }
       .accent-purple .tool-icon { background: #f2edfc; color: #7551ae; }
       .tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .proxy-card textarea, .proxy-maker-card textarea, .format-card textarea { width: 100%; min-height: 148px; resize: vertical; line-height: 1.45; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .78rem; border: 1px solid #ccd3ca; background: #fff; padding: 11px 12px; border-radius: 10px; color: var(--ink); }
+      .proxy-card textarea, .proxy-maker-card textarea, .format-card textarea, .dedupe-card textarea { width: 100%; min-height: 148px; resize: vertical; line-height: 1.45; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .78rem; border: 1px solid #ccd3ca; background: #fff; padding: 11px 12px; border-radius: 10px; color: var(--ink); }
       .proxy-lists { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
       .proxy-card textarea[readonly] { background: #f6f3fb; color: #433565; }
       .proxy-maker-card textarea[readonly] { background: #edf8fc; color: #1f6380; }
@@ -35,6 +35,13 @@
       .format-result-actions .format-action-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
       .format-card .search-button { background: #247b6a; }
       .format-card .secondary-button { background: #edf9f6; border-color: #bce5da; color: #1e695b; }
+      .dedupe-card { grid-column: 1 / -1; }
+      .dedupe-card textarea[readonly] { background: #edf9f6; color: #1e695b; }
+      .dedupe-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+      .dedupe-fields label { margin-top: 0; }
+      .dedupe-card .search-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .dedupe-card .search-button { background: #247b6a; }
+      .dedupe-card .secondary-button { background: #edf9f6; border-color: #bce5da; color: #1e695b; }
       .member-login { position: relative; }
       .login-toggle { padding: 8px 13px; font-size: .78rem; }
       .login-popover { position: absolute; top: calc(100% + 10px); right: 0; z-index: 10; width: min(320px, calc(100vw - 36px)); background: var(--card); border: 1px solid var(--line); border-top: 6px solid var(--blue); border-radius: 18px; padding: 16px; box-shadow: 0 14px 30px rgba(24,35,29,.12); }
@@ -48,7 +55,7 @@
       body.is-guest .member-only { display: none; }
       body.is-member .member-login { display: none; }
       body.is-member .member-badge, body.is-member .logout-button { display: inline-flex; }
-      @media (max-width: 800px) { .proxy-lists, .proxy-maker-fields, .proxy-maker-card .search-actions, .format-card .search-actions, .format-fields { grid-template-columns: 1fr; } }
+      @media (max-width: 800px) { .proxy-lists, .proxy-maker-fields, .proxy-maker-card .search-actions, .format-card .search-actions, .format-fields, .dedupe-card .search-actions, .dedupe-fields { grid-template-columns: 1fr; } }
     </style>
   </head>
   <body class="is-guest">
@@ -117,6 +124,18 @@
             <div class="format-action-row"><button id="downloadFormat" class="secondary-button" type="button">下載合併 TXT</button><button id="downloadSplitFormat" class="secondary-button" type="button">下載分拆 TXT</button></div>
           </div>
           <p id="formatStatus" class="small-note" aria-live="polite">資料只會在此瀏覽器處理，不會儲存或上傳。</p>
+        </article>
+
+        <article class="tool-card accent-teal dedupe-card">
+          <div class="card-heading"><span class="tool-icon">≠</span><div><p class="label">資料整理</p><h2>去除重複資料</h2></div></div>
+          <p class="helper">把要整理的資料貼在「資料來源」，把要排除的資料貼在「重複資料」。只要整行內容相同，就會自動移除並輸出新結果；不限制每行有多少段。</p>
+          <div class="dedupe-fields">
+            <div><label for="dedupeSource">資料來源</label><textarea id="dedupeSource" rows="7" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="每行一筆資料&#10;例如：A:B:C"></textarea></div>
+            <div><label for="dedupeBlocklist">重複資料</label><textarea id="dedupeBlocklist" rows="7" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="要排除的重複資料，每行一筆"></textarea></div>
+            <div><label for="dedupeOutput">新結果</label><textarea id="dedupeOutput" rows="7" readonly aria-label="去除重複後的新結果" placeholder="去除重複後會顯示在這裡"></textarea></div>
+          </div>
+          <div class="search-actions proxy-actions"><button id="removeDuplicates" class="search-button" type="button">去除重複</button><button id="copyDedupe" class="secondary-button" type="button">複製結果</button><button id="downloadDedupe" class="secondary-button" type="button">下載 TXT</button></div>
+          <p id="dedupeStatus" class="small-note" aria-live="polite">資料只會在此瀏覽器處理，不會儲存或上傳。</p>
         </article>
 
         <article class="tool-card accent-blue proxy-maker-card member-only">
