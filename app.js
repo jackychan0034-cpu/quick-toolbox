@@ -124,7 +124,9 @@ function bindCopyButton(buttonId, outputId, statusId, { empty, success, fallback
     button.textContent = originalLabel;
     const result = output.value.trim();
     if (!result) {
-      status.textContent = empty;
+      status.textContent = `複製失敗：${empty}`;
+      button.textContent = "✕ 複製失敗";
+      resetTimer = setTimeout(() => { button.textContent = originalLabel; }, 2500);
       return;
     }
 
@@ -137,7 +139,9 @@ function bindCopyButton(buttonId, outputId, statusId, { empty, success, fallback
     } catch {
       output.focus();
       output.select();
-      status.textContent = fallback;
+      status.textContent = `複製失敗；已選取結果，請按 Ctrl/Cmd + C 手動複製。${fallback ? `（${fallback}）` : ""}`;
+      button.textContent = "✕ 複製失敗";
+      resetTimer = setTimeout(() => { button.textContent = originalLabel; }, 2500);
     } finally {
       copying = false;
     }
