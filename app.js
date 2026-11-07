@@ -110,18 +110,44 @@ $("shuffleProxies").addEventListener("click", () => {
   status.textContent = `已隨機打亂 ${proxies.length} 條代理資料。`;
 });
 
-$("copyProxies").addEventListener("click", async () => {
-  const list = $("shuffledProxyList").value.trim();
-  const status = $("proxyStatus");
-  if (!list) { status.textContent = "沒有可複製的代理資料。"; return; }
-  try {
-    await navigator.clipboard.writeText(list);
-    status.textContent = "已複製打亂後的代理清單。";
-  } catch {
-    $("shuffledProxyList").focus();
-    $("shuffledProxyList").select();
-    status.textContent = "已選取清單，請按 Ctrl/Cmd + C 複製。";
-  }
+function bindCopyButton(buttonId, outputId, statusId, { empty, success, fallback }) {
+  const button = $(buttonId);
+  const output = $(outputId);
+  const status = $(statusId);
+  const originalLabel = button.textContent;
+  let resetTimer;
+  let copying = false;
+
+  button.addEventListener("click", async () => {
+    if (copying) return;
+    clearTimeout(resetTimer);
+    button.textContent = originalLabel;
+    const result = output.value.trim();
+    if (!result) {
+      status.textContent = empty;
+      return;
+    }
+
+    copying = true;
+    try {
+      await navigator.clipboard.writeText(result);
+      status.textContent = success;
+      button.textContent = "✓ 複製成功";
+      resetTimer = setTimeout(() => { button.textContent = originalLabel; }, 2500);
+    } catch {
+      output.focus();
+      output.select();
+      status.textContent = fallback;
+    } finally {
+      copying = false;
+    }
+  });
+}
+
+bindCopyButton("copyProxies", "shuffledProxyList", "proxyStatus", {
+  empty: "沒有可複製的代理資料。",
+  success: "已複製打亂後的代理清單。",
+  fallback: "已選取清單，請按 Ctrl/Cmd + C 複製。",
 });
 
 function linesFrom(id) {
@@ -193,11 +219,10 @@ function updateDedupeResult(options = {}) {
 
 $("removeDuplicates").addEventListener("click", () => updateDedupeResult({ manual: true }));
 
-$("copyDedupe").addEventListener("click", async () => {
-  const result = $("dedupeOutput").value.trim(), status = $("dedupeStatus");
-  if (!result) { status.textContent = "沒有可複製的新結果。"; return; }
-  try { await navigator.clipboard.writeText(result); status.textContent = "已複製去重後的新結果。"; }
-  catch { $("dedupeOutput").focus(); $("dedupeOutput").select(); status.textContent = "已選取新結果，請按 Ctrl/Cmd + C 複製。"; }
+bindCopyButton("copyDedupe", "dedupeOutput", "dedupeStatus", {
+  empty: "沒有可複製的新結果。",
+  success: "已複製去重後的新結果。",
+  fallback: "已選取新結果，請按 Ctrl/Cmd + C 複製。",
 });
 
 $("downloadDedupe").addEventListener("click", () => {
@@ -309,11 +334,10 @@ $("makeProxies").addEventListener("click", () => {
   status.textContent = `已生成 ${proxies.length} 條代理格式。`;
 });
 
-$("copyMadeProxies").addEventListener("click", async () => {
-  const result = $("proxyMakerOutput").value.trim(), status = $("proxyMakerStatus");
-  if (!result) { status.textContent = "請先生成代理資料。"; return; }
-  try { await navigator.clipboard.writeText(result); status.textContent = "已複製代理結果。"; }
-  catch { $("proxyMakerOutput").focus(); $("proxyMakerOutput").select(); status.textContent = "已選取代理結果，請按 Ctrl/Cmd + C 複製。"; }
+bindCopyButton("copyMadeProxies", "proxyMakerOutput", "proxyMakerStatus", {
+  empty: "請先生成代理資料。",
+  success: "已複製代理結果。",
+  fallback: "已選取代理結果，請按 Ctrl/Cmd + C 複製。",
 });
 
 $("downloadMadeProxies").addEventListener("click", () => {
@@ -364,11 +388,10 @@ $("cleanupFormat").addEventListener("click", () => {
   status.textContent = count ? `已清理 ${count} 個亂碼字串。` : "目前結果沒有需要清理的亂碼字串。";
 });
 
-$("copyFormat").addEventListener("click", async () => {
-  const result = $("formatOutput").value.trim(), status = $("formatStatus");
-  if (!result) { status.textContent = "請先合併資料。"; return; }
-  try { await navigator.clipboard.writeText(result); status.textContent = "已複製合併結果。"; }
-  catch { $("formatOutput").focus(); $("formatOutput").select(); status.textContent = "已選取結果，請按 Ctrl/Cmd + C 複製。"; }
+bindCopyButton("copyFormat", "formatOutput", "formatStatus", {
+  empty: "請先合併資料。",
+  success: "已複製合併結果。",
+  fallback: "已選取結果，請按 Ctrl/Cmd + C 複製。",
 });
 
 $("downloadFormat").addEventListener("click", () => {
@@ -378,11 +401,10 @@ $("downloadFormat").addEventListener("click", () => {
   status.textContent = "已建立 TXT 檔案。";
 });
 
-$("copySplitFormat").addEventListener("click", async () => {
-  const result = $("formatSplitOutput").value.trim(), status = $("formatStatus");
-  if (!result) { status.textContent = "請先分拆資料。"; return; }
-  try { await navigator.clipboard.writeText(result); status.textContent = "已複製分拆結果。"; }
-  catch { $("formatSplitOutput").focus(); $("formatSplitOutput").select(); status.textContent = "已選取分拆結果，請按 Ctrl/Cmd + C 複製。"; }
+bindCopyButton("copySplitFormat", "formatSplitOutput", "formatStatus", {
+  empty: "請先分拆資料。",
+  success: "已複製分拆結果。",
+  fallback: "已選取分拆結果，請按 Ctrl/Cmd + C 複製。",
 });
 
 $("downloadSplitFormat").addEventListener("click", () => {
